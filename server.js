@@ -33,7 +33,7 @@ app.post('/webhook', function(req, res) { // Phần sử lý tin nhắn của ng
       if (message.message) {
         if (message.message.text) {
           var text = message.message.text;
-          sendMessage(senderId, "Hello!! I'm a bot. Your message: " + text);
+          callSendAPI(senderId, "Hello!! I'm a bot. Your message: " + text);
         }
       }
     }
@@ -58,6 +58,31 @@ function sendMessage(senderId, message) {
       },
     }
   });
+}
+
+
+function callSendAPI(sender_psid, response) {
+  // Construct the message body
+  let request_body = {
+    "recipient": {
+      "id": sender_psid
+    },
+    "message": response
+  }
+
+  // Send the HTTP request to the Messenger Platform
+  request({
+    "uri": "https://graph.facebook.com/v2.6/me/messages",
+    "qs": { "access_token": PAGE_ACCESS_TOKEN },
+    "method": "POST",
+    "json": request_body
+  }, (err, res, body) => {
+    if (!err) {
+      console.log('message sent!')
+    } else {
+      console.error("Unable to send message:" + err);
+    }
+  }); 
 }
 
 app.set('port', process.env.PORT || 5000);
