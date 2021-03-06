@@ -105,36 +105,29 @@ function handleMessage(sender_psid, received_message) {
     "recipient": {
       "id": sender_psid
     },
+	"messaging_type": "RESPONSE",
     "message": response
   }
 
   console.log(request_body);
-  return request_body;
-  // callSendAPI(sender_psid, response);
+  return callSendAPI(sender_psid, request_body);
 }
 
-function callSendAPI(sender_psid, response) {
-  // Construct the message body
-  let request_body = {
-    "recipient": {
-      "id": sender_psid
-    },
-    "message": response
-  }
+function callSendAPI(sender_psid, request_body) {
 
   console.log(request_body);
   // Send the HTTP request to the Messenger Platform
-  // request({
-    // "url": "https://graph.facebook.com/v2.6/me/messages",
-    // "qs": { "access_token": "EAAMfpc4yQYkBACHtTgsDV2ocjbbRLqU1YsbIldG9mqLEZAJIV8IJD5ZAhfdcq9NcbixEe7eFcIZAbMkqY2UAjx19SuTQhVk6CTJMZC6n5tuXTSV78Yv3j7f9ZBt8QL51WGAOqfPgUPGDcrHJF3qKMRUO9LlLqoDr8jeZA2luwqxgZDZD" },
-    // "method": "POST",
-    // "json": request_body
-  // }, (err, res, body) => {
-    // if (!err) {
-      // console.log('message sent!')
-    // } else {
-      // console.error("=========================== error ============================");
-      // console.error("Unable to send message:" + err);
-    // }
-  // }); 
+   request({
+     "uri": "https://graph.facebook.com/v10.0/me/messages?access_token=EAAMfpc4yQYkBACHtTgsDV2ocjbbRLqU1YsbIldG9mqLEZAJIV8IJD5ZAhfdcq9NcbixEe7eFcIZAbMkqY2UAjx19SuTQhVk6CTJMZC6n5tuXTSV78Yv3j7f9ZBt8QL51WGAOqfPgUPGDcrHJF3qKMRUO9LlLqoDr8jeZA2luwqxgZDZD",
+     "method": "POST",
+     "json": request_body
+   }, (err, res, body) => {
+     if (!err) {
+       console.log('message sent!')
+     } else {
+       console.error("=========================== error ============================");
+       console.error("Unable to send message:" + err);
+    }
+   });
+   return request_body; 
 }
