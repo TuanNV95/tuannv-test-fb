@@ -1,3 +1,4 @@
+require('dotenv').config();
 'use strict';
 let PAGE_ACCESS_TOKEN = "EAAMfpc4yQYkBACHtTgsDV2ocjbbRLqU1YsbIldG9mqLEZAJIV8IJD5ZAhfdcq9NcbixEe7eFcIZAbMkqY2UAjx19SuTQhVk6CTJMZC6n5tuXTSV78Yv3j7f9ZBt8QL51WGAOqfPgUPGDcrHJF3qKMRUO9LlLqoDr8jeZA2luwqxgZDZD";
 
