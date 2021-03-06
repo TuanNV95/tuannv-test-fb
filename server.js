@@ -1,4 +1,5 @@
 'use strict';
+const axios = require("axios");
 
 // Imports dependencies and set up http server
 const
@@ -105,29 +106,54 @@ function handleMessage(sender_psid, received_message) {
     "recipient": {
       "id": sender_psid
     },
-	"messaging_type": "RESPONSE",
     "message": response
   }
 
   console.log(request_body);
-  return callSendAPI(sender_psid, request_body);
+  //return callSendAPI(sender_psid, request_body);
+  return callSendAPI(sender_psid, "You sent the message: " + received_message.text + ". Now send me an image!");
 }
 
-function callSendAPI(sender_psid, request_body) {
+function callSendAPI(id, mess) {
 
-  console.log(request_body);
   // Send the HTTP request to the Messenger Platform
-   request({
-     "uri": "https://graph.facebook.com/v10.0/me/messages?access_token=EAAMfpc4yQYkBACHtTgsDV2ocjbbRLqU1YsbIldG9mqLEZAJIV8IJD5ZAhfdcq9NcbixEe7eFcIZAbMkqY2UAjx19SuTQhVk6CTJMZC6n5tuXTSV78Yv3j7f9ZBt8QL51WGAOqfPgUPGDcrHJF3qKMRUO9LlLqoDr8jeZA2luwqxgZDZD",
-     "method": "POST",
-     "json": request_body
-   }, (err, res, body) => {
-     if (!err) {
-       console.log('message sent!')
-     } else {
-       console.error("=========================== error ============================");
-       console.error("Unable to send message:" + err);
-    }
-   });
-   return request_body; 
+  try {
+	   // request({
+		 // "uri": "https://graph.facebook.com/v2.6/me/messages&#39",
+		 // "qs": { "access_token": "EAAMfpc4yQYkBAFF68TFvlJLfQeSzUZCfmAASilPV7b8rNtjvSyk1JuBssvKpfMHtsRODTVfGZBhRfurYEfPDxxyk8fSxlWdbYjzBxZAFdf4KxE7cSN4cvmaoO4PCC4TBY4hL9HOXc6Qb92ZAtdZAT43xRNZAzYuCZBWtqvzjyACWwZDZD" },
+		 // "method": "post",
+		 // "json": request_body
+	   // }, (err, res, body) => {
+		 // if (!err) {
+		   // console.log('message sent!')
+		 // } else {
+		   // console.error("unable to send message:" + err);
+		 // }
+	 // }); 
+	 
+	 
+	 
+	 request({
+		url: 'https://graph.facebook.com/v2.6/me/messages',
+		qs: {
+		  access_token: "EAAMfpc4yQYkBAFF68TFvlJLfQeSzUZCfmAASilPV7b8rNtjvSyk1JuBssvKpfMHtsRODTVfGZBhRfurYEfPDxxyk8fSxlWdbYjzBxZAFdf4KxE7cSN4cvmaoO4PCC4TBY4hL9HOXc6Qb92ZAtdZAT43xRNZAzYuCZBWtqvzjyACWwZDZD",
+		},
+		method: 'POST',
+		json: {
+		  recipient: {
+			id: id
+		  },
+		  message: {
+			text: mess
+		  },
+		}
+	  });
+	  return "PASS";
+  }
+  catch (e) {
+	  console.log("entering catch block");
+	  console.log(e);
+	  console.log("leaving catch block");
+	  return "ERROR";
+	}
 }
