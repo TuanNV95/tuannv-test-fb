@@ -1,44 +1,22 @@
-const APP_SECRET = 'e684d2bb23ee636372faaf2be5a2803a';
-const VALIDATION_TOKEN = 'TUANNGUYENPX';
-const PAGE_ACCESS_TOKEN = 'EAAMfpc4yQYkBAL95z000cHwwWQ6LJG0v6neXSCyBl7hwVBpRmsp2IzLkMxWClKgEipSW3cD79FZCCBKZAjUcazgXkXhhPQ1e4d9l0mo8agxJPjejNSrLZBazYdI464FxU75A9TwZAWRXcdjniUJAqTvOnPeFtmFZC3pTcTXHeHgZDZD';
+'use strict';
+let PAGE_ACCESS_TOKEN = "EAAMfpc4yQYkBACHtTgsDV2ocjbbRLqU1YsbIldG9mqLEZAJIV8IJD5ZAhfdcq9NcbixEe7eFcIZAbMkqY2UAjx19SuTQhVk6CTJMZC6n5tuXTSV78Yv3j7f9ZBt8QL51WGAOqfPgUPGDcrHJF3qKMRUO9LlLqoDr8jeZA2luwqxgZDZD";
+// Your verify token. Should be a random string.
+let VERIFY_TOKEN = "TUANNGUYENPX";
+  
+  
+  
+// Imports dependencies and set up http server
+const
+  express = require('express'),
+  bodyParser = require('body-parser'),
+  app = express().use(bodyParser.json()); // creates express http server
 
-var http = require('http');
-var bodyParser = require('body-parser');
-var express = require('express');
+// Sets server port and logs message on success
+app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
 
-var app = express();
-app.use(bodyParser.urlencoded({
-  extended: false
-}));
-var server = http.createServer(app);
-var request = require("request");
-
-app.get('/', (req, res) => {
-  res.send("Home page. Server running okay.");
-});
-
-app.get('/webhook', function(req, res) { // Đây là path để validate tooken bên app facebook gửi qua
-  if (req.query['hub.verify_token'] === VALIDATION_TOKEN) {
-    res.send(req.query['hub.challenge']);
-  }
-  res.send('Error, wrong validation token');
-});
-
-app.post('/webhook', function(req, res) { // Phần sử lý tin nhắn của người dùng gửi đến
-  // var entries = req.body.entry;
-  // for (var entry of entries) {
-    // var messaging = entry.messaging;
-    // for (var message of messaging) {
-      // var senderId = message.sender.id;
-      // if (message.message) {
-        // if (message.message.text) {
-          // var text = message.message.text;
-          // //callSendAPI(senderId, "Hello!! I'm a bot. Your message: " + text);
-        // }
-      // }
-    // }
-  // }
-  // res.status(200).send("OK");
+// Creates the endpoint for our webhook 
+app.post('/webhook', (req, res) => {  
+ 
   // Parse the request body from the POST
   let body = req.body;
 
@@ -61,6 +39,8 @@ app.post('/webhook', function(req, res) { // Phần sử lý tin nhắn của ng
   // pass the event to the appropriate handler function
   if (webhook_event.message) {
     handleMessage(sender_psid, webhook_event.message);        
+  } else if (webhook_event.postback) {
+    handlePostback(sender_psid, webhook_event.postback);
   }
   
 });
@@ -72,48 +52,71 @@ app.post('/webhook', function(req, res) { // Phần sử lý tin nhắn của ng
     // Return a '404 Not Found' if event is not from a page subscription
     res.sendStatus(404);
   }
-
 });
 
-// Đây là function dùng api của facebook để gửi tin nhắn
-function sendMessage(senderId, message) {
-  request({
-    url: 'https://graph.facebook.com/v2.6/me/messages',
-    qs: {
-      access_token: PAGE_ACCESS_TOKEN,
-    },
-    method: 'POST',
-    json: {
-      recipient: {
-        id: senderId
-      },
-      message: {
-        text: message
-      },
-    }
-  });
-}
+// Adds support for GET requests to our webhook
+app.get('/webhook', (req, res) => {
 
-
-function handleMessage(sender_psid, received_message) {
-
-  let response;
-
-  // Check if the message contains text
-  if (received_message.text) {    
-
-    // Create the payload for a basic text message
-    response = {
-      "text": `You sent the message: "${received_message.text}". Now send me an image!`
-    }
-  }  
+    
+  // Parse the query params
+  let mode = req.query['hub.mode'];
+  let token = req.query['hub.verify_token'];
+  let challenge = req.query['hub.challenge'];
+    
+  // Checks if a token and mode is in the query string of the request
+  if (mode && token) {
   
-  // Sends the response message
-  callSendAPI(sender_psid, response);    
+    // Checks the mode and token sent is correct
+    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+      
+      // Responds with the challenge token from the request
+      console.log('WEBHOOK_VERIFIED');
+      res.status(200).send(challenge);
+    
+    } else {
+      // Responds with '403 Forbidden' if verify tokens do not match
+      res.sendStatus(403);      
+    }
+  }
+});
+
+// Handles messages events
+function handleMessage(sender_psid, received_message) {
+	let response;
+
+	  // Check if the message contains text
+	  if (received_message.text) {    
+
+		// Create the payload for a basic text message
+		response = {
+		  "text": `You sent the message: "${received_message.text}". Now send me an image!`
+		}
+	  }  
+	  
+	  // Sends the response message
+	  callSendAPI(sender_psid, response);  
 }
 
+// Handles messaging_postbacks events
+function handlePostback(sender_psid, received_postback) {
+let response;
+  
+  // Get the payload for the postback
+  let payload = received_postback.payload;
+
+  // Set the response based on the postback payload
+  if (payload === 'yes') {
+    response = { "text": "Thanks!" }
+  } else if (payload === 'no') {
+    response = { "text": "Oops, try sending another image." }
+  }
+  // Send the message to acknowledge the postback
+  callSendAPI(sender_psid, response);
+}
+
+// Sends response messages via the Send API
 function callSendAPI(sender_psid, response) {
-  // Construct the message body
+	 // Construct the message body
   let request_body = {
     "recipient": {
       "id": sender_psid
@@ -130,18 +133,9 @@ function callSendAPI(sender_psid, response) {
   }, (err, res, body) => {
     if (!err) {
       console.log('message sent!')
-	  res.send(err);
-	  res.send(res);
-	  res.send(body);
     } else {
-      res.send("Unable to send message:" + err);
+      console.error("Unable to send message:" + err);
     }
   }); 
 }
 
-app.set('port', process.env.PORT || 5000);
-app.set('ip', process.env.IP || "0.0.0.0");
-
-server.listen(app.get('port'), app.get('ip'), function() {
-  console.log("Chat bot server listening at %s:%d ", app.get('ip'), app.get('port'));
-});
