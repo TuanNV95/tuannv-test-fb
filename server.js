@@ -1,138 +1,70 @@
-require('dotenv').config();
-'use strict';
-let PAGE_ACCESS_TOKEN = "EAAMfpc4yQYkBACHtTgsDV2ocjbbRLqU1YsbIldG9mqLEZAJIV8IJD5ZAhfdcq9NcbixEe7eFcIZAbMkqY2UAjx19SuTQhVk6CTJMZC6n5tuXTSV78Yv3j7f9ZBt8QL51WGAOqfPgUPGDcrHJF3qKMRUO9LlLqoDr8jeZA2luwqxgZDZD";
+const APP_SECRET = 'e684d2bb23ee636372faaf2be5a2803a';
+const VALIDATION_TOKEN = 'TUANNGUYENPX';
+const PAGE_ACCESS_TOKEN = 'EAAMfpc4yQYkBACHtTgsDV2ocjbbRLqU1YsbIldG9mqLEZAJIV8IJD5ZAhfdcq9NcbixEe7eFcIZAbMkqY2UAjx19SuTQhVk6CTJMZC6n5tuXTSV78Yv3j7f9ZBt8QL51WGAOqfPgUPGDcrHJF3qKMRUO9LlLqoDr8jeZA2luwqxgZDZD';
 
-  
-// Imports dependencies and set up http server
-const
-  express = require('express'),
-  bodyParser = require('body-parser'),
-  app = express().use(bodyParser.json()); // creates express http server
+var http = require('http');
+var bodyParser = require('body-parser');
+var express = require('express');
 
-// Sets server port and logs message on success
-app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
+var app = express();
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
+var server = http.createServer(app);
+var request = require("request");
 
-// Creates the endpoint for our webhook 
-app.post('/webhook', (req, res) => {  
- 
-	  let VERIFY_TOKEN = "TUANNGUYENPX";
-	  // Parse the request body from the POST
-	  let body = req.body;
-
-	  // Check the webhook event is from a Page subscription
-	  if (body.object === 'page') {
-
-		// Iterate over each entry - there may be multiple if batched
-		body.entry.forEach(function(entry) {
-
-	  // Gets the body of the webhook event
-	  let webhook_event = entry.messaging[0];
-	  console.log(webhook_event);
-
-	  // Get the sender PSID
-	  let sender_psid = webhook_event.sender.id;
-	  console.log('Sender PSID: ' + sender_psid);
-
-	  // Check if the event is a message or postback and
-	  // pass the event to the appropriate handler function
-	  if (webhook_event.message) {
-		handleMessage(sender_psid, webhook_event.message);        
-	  } else if (webhook_event.postback) {
-		handlePostback(sender_psid, webhook_event.postback);
-	  }
-	});
-
-    // Return a '200 OK' response to all events
-    res.status(200).send('EVENT_RECEIVED');
-
-  } else {
-    // Return a '404 Not Found' if event is not from a page subscription
-    res.sendStatus(404);
-  }
+app.get('/', (req, res) => {
+  res.send("Home page. Server running okay.");
 });
 
-// Adds support for GET requests to our webhook
-app.get('/webhook', (req, res) => {
+app.get('/webhook', function(req, res) { // Đây là path để validate tooken bên app facebook gửi qua
+  if (req.query['hub.verify_token'] === VALIDATION_TOKEN) {
+    res.send(req.query['hub.challenge']);
+  }
+  res.send('Error, wrong validation token');
+});
 
-    
-  // Parse the query params
-  let mode = req.query['hub.mode'];
-  let token = req.query['hub.verify_token'];
-  let challenge = req.query['hub.challenge'];
-    
-  // Checks if a token and mode is in the query string of the request
-  if (mode && token) {
-  
-    // Checks the mode and token sent is correct
-    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-      
-      // Responds with the challenge token from the request
-      console.log('WEBHOOK_VERIFIED');
-      res.status(200).send(challenge);
-    
-    } else {
-      // Responds with '403 Forbidden' if verify tokens do not match
-      res.sendStatus(403);      
+app.post('/webhook', function(req, res) { // Phần sử lý tin nhắn của người dùng gửi đến
+  console.log("event post starting...");
+  var entries = req.body.entry;
+  for (var entry of entries) {
+    var messaging = entry.messaging;
+    for (var message of messaging) {
+      var senderId = message.sender.id;
+      if (message.message) {
+        if (message.message.text) {
+          var text = message.message.text;
+		  console.log("sending message...");
+          sendMessage(senderId, "Hello!! I'm a bot. Your message: " + text);
+        }
+      }
     }
   }
+  res.status(200).send("OK");
 });
 
-// Handles messages events
-function handleMessage(sender_psid, received_message) {
-	let response;
-
-	  // Check if the message contains text
-	  if (received_message.text) {    
-
-		// Create the payload for a basic text message
-		response = {
-		  "text": `You sent the message: "${received_message.text}". Now send me an image!`
-		}
-	  }  
-	  
-	  // Sends the response message
-	  callSendAPI(sender_psid, response);  
-}
-
-// Handles messaging_postbacks events
-function handlePostback(sender_psid, received_postback) {
-let response;
-  
-  // Get the payload for the postback
-  let payload = received_postback.payload;
-
-  // Set the response based on the postback payload
-  if (payload === 'yes') {
-    response = { "text": "Thanks!" }
-  } else if (payload === 'no') {
-    response = { "text": "Oops, try sending another image." }
-  }
-  // Send the message to acknowledge the postback
-  callSendAPI(sender_psid, response);
-}
-
-// Sends response messages via the Send API
-function callSendAPI(sender_psid, response) {
-	 // Construct the message body
-  let request_body = {
-    "recipient": {
-      "id": sender_psid
-    },
-    "message": response
-  }
-
-  // Send the HTTP request to the Messenger Platform
+// Đây là function dùng api của facebook để gửi tin nhắn
+function sendMessage(senderId, message) {
   request({
-    "uri": "https://graph.facebook.com/v2.6/me/messages",
-    "qs": { "access_token": PAGE_ACCESS_TOKEN },
-    "method": "POST",
-    "json": request_body
-  }, (err, res, body) => {
-    if (!err) {
-      console.log('message sent!')
-    } else {
-      console.error("Unable to send message:" + err);
+    url: 'https://graph.facebook.com/v2.6/me/messages',
+    qs: {
+      access_token: PAGE_ACCESS_TOKEN,
+    },
+    method: 'POST',
+    json: {
+      recipient: {
+        id: senderId
+      },
+      message: {
+        text: message
+      },
     }
-  }); 
+  });
 }
 
+app.set('port', process.env.PORT || 5000);
+app.set('ip', process.env.IP || "0.0.0.0");
+
+server.listen(app.get('port'), app.get('ip'), function() {
+  console.log("Chat bot server listening at %s:%d ", app.get('ip'), app.get('port'));
+});
