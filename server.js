@@ -110,50 +110,31 @@ function handleMessage(sender_psid, received_message) {
   }
 
   console.log(request_body);
-  //return callSendAPI(sender_psid, request_body);
-  return callSendAPI(sender_psid, "You sent the message: " + received_message.text + ". Now send me an image!");
+  return callSendAPI(sender_psid, request_body);
 }
 
-function callSendAPI(id, mess) {
+function callSendAPI(sender_psid, request_body) {
 
+  console.log(request_body);
   // Send the HTTP request to the Messenger Platform
-  // try {
-	   // request({
-		 // "uri": "https://graph.facebook.com/v2.6/me/messages&#39",
-		 // "qs": { "access_token": "EAAMfpc4yQYkBAFF68TFvlJLfQeSzUZCfmAASilPV7b8rNtjvSyk1JuBssvKpfMHtsRODTVfGZBhRfurYEfPDxxyk8fSxlWdbYjzBxZAFdf4KxE7cSN4cvmaoO4PCC4TBY4hL9HOXc6Qb92ZAtdZAT43xRNZAzYuCZBWtqvzjyACWwZDZD" },
-		 // "method": "post",
-		 // "json": request_body
-	   // }, (err, res, body) => {
-		 // if (!err) {
-		   // console.log('message sent!')
-		 // } else {
-		   // console.error("unable to send message:" + err);
-		 // }
-	 // }); 
-	 
-	 
-	 
-	 request({
-		url: 'https://graph.facebook.com/v2.6/me/messages',
-		qs: {
-		  access_token: "EAAMfpc4yQYkBAFF68TFvlJLfQeSzUZCfmAASilPV7b8rNtjvSyk1JuBssvKpfMHtsRODTVfGZBhRfurYEfPDxxyk8fSxlWdbYjzBxZAFdf4KxE7cSN4cvmaoO4PCC4TBY4hL9HOXc6Qb92ZAtdZAT43xRNZAzYuCZBWtqvzjyACWwZDZD",
-		},
-		method: 'POST',
-		json: {
-		  recipient: {
-			id: id
-		  },
-		  message: {
-			text: mess
-		  },
-		}
-	  });
-	  return "PASS";
-  // }
-  // catch (e) {
-	  // console.log("entering catch block");
-	  // console.log(e);
-	  // console.log("leaving catch block");
-	  // return "ERROR";
-	// }
+  try {
+	   request({
+		 "uri": "https://graph.facebook.com/v2.6/me/messages",
+		 "qs": { "access_token": "EAAMfpc4yQYkBAFF68TFvlJLfQeSzUZCfmAASilPV7b8rNtjvSyk1JuBssvKpfMHtsRODTVfGZBhRfurYEfPDxxyk8fSxlWdbYjzBxZAFdf4KxE7cSN4cvmaoO4PCC4TBY4hL9HOXc6Qb92ZAtdZAT43xRNZAzYuCZBWtqvzjyACWwZDZD" },
+		 "method": "post",
+		 "json": request_body
+	   }, (err, res, body) => {
+		 if (!err) {
+		   console.log('message sent!')
+		 } else {
+		   console.error("unable to send message:" + err);
+		 }
+	 }); 
+  }
+  catch (e) {
+	  console.log("entering catch block");
+	  console.log(e);
+	  console.log("leaving catch block");
+	  return "ERROR";
+	}
 }
