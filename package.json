@@ -1,26 +1,15 @@
 {
-  "name": "tuannv-test-fb",
+  "name": "messenger-webhook",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/TuanNV95/tuannv-test-fb.git"
-  },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/TuanNV95/tuannv-test-fb/issues"
-  },
-  "homepage": "https://github.com/TuanNV95/tuannv-test-fb#readme",
   "dependencies": {
     "body-parser": "^1.19.0",
-    "config": "^3.3.4",
-    "dotenv": "^8.2.0",
-    "express": "^4.17.1",
-    "request": "^2.88.2"
+    "express": "^4.17.1"
   }
 }
