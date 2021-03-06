@@ -117,7 +117,7 @@ function callSendAPI(sender_psid, request_body) {
 
   console.log(request_body);
   // Send the HTTP request to the Messenger Platform
-  try {
+  // try {
 	   request({
 		 "uri": "https://graph.facebook.com/v10.0/me/messages",
 		 "qs": { "access_token": "EAAMfpc4yQYkBAFF68TFvlJLfQeSzUZCfmAASilPV7b8rNtjvSyk1JuBssvKpfMHtsRODTVfGZBhRfurYEfPDxxyk8fSxlWdbYjzBxZAFdf4KxE7cSN4cvmaoO4PCC4TBY4hL9HOXc6Qb92ZAtdZAT43xRNZAzYuCZBWtqvzjyACWwZDZD" },
@@ -130,11 +130,11 @@ function callSendAPI(sender_psid, request_body) {
 		   console.error("unable to send message:" + err);
 		 }
 	 }); 
-  }
-  catch (e) {
-	  console.log("entering catch block");
-	  console.log(e);
-	  console.log("leaving catch block");
-	  return "ERROR";
-	}
+  // }
+  // catch (e) {
+	  // console.log("entering catch block");
+	  // console.log(e);
+	  // console.log("leaving catch block");
+	  // return "ERROR";
+	// }
 }
